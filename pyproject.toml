@@ -13,6 +13,7 @@ openai = "^0.28.1"
 rich = "^13.6.0"
 litestar = "^2.2.1"
 uvicorn = "^0.23.2"
+poetry-dotenv-plugin = "^0.2.0"
 
 [build-system]
 requires = ["poetry-core"]

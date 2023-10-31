@@ -48,5 +48,3 @@ except Exception as e:
         parser=parser, llm=model
     )
     workout = retry_parser.parse_with_prompt(output, _input)
-
-print(workout)

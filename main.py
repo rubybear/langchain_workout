@@ -24,7 +24,6 @@ async def prompt() -> ChatMemory:
 
 @app.put("/submit")
 async def submit(data: ChatMemory, settings: Annotated[Settings, Depends(get_settings)]) -> Workout:
-    print(settings.openai_api_key)
     workout = LLMParser(memory=data, api_key=settings.openai_api_key)
     parsed_workout = workout.parse_workout()
     return parsed_workout

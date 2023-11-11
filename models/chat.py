@@ -1,5 +1,6 @@
 from typing import Dict
 
+from langchain.memory import ChatMessageHistory
 from pydantic import BaseModel
 
 from chat_memory import MEMORY

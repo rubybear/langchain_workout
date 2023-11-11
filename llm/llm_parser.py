@@ -1,5 +1,5 @@
-from langchain.llms.openai import OpenAI
-from langchain.prompts import PromptTemplate
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import PromptTemplate, ChatPromptTemplate
 
 from models.chat import ChatMemory
 from models.workout import Workout
@@ -10,7 +10,7 @@ class LLMParser:
     def __init__(self, memory: ChatMemory, api_key: str, model_name='gpt-3.5-turbo', temperature=0.0):
         self.model_name = model_name
         self.temperature = temperature
-        self.model = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=api_key)
+        self.model = ChatOpenAI(model_name=model_name, temperature=temperature, openai_api_key=api_key)
         self.memory = None
         self.parser = PydanticOutputParser(pydantic_object=Workout)
 
@@ -32,13 +32,14 @@ class LLMParser:
             special attention to what specific type of exercise is required and its required fields.
             """, chat_history=memory)
 
-        self.output = self.model(self._input.to_string())
+        self.output = self.model(self._input.to_messages())
 
     def parse_workout(self) -> Workout:
         try:
-            return self.parser.parse(self.model(self.output))
+            self.output.__str__()
+            return self.parser.parse(self.output.content)
         except Exception as e:
             retry_parser = RetryWithErrorOutputParser.from_llm(
                 parser=self.parser, llm=self.model
             )
-            return retry_parser.parse_with_prompt(self.output, self._input)
+            return retry_parser.parse_with_prompt(self.output.content, self._input)

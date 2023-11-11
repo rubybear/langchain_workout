@@ -9,11 +9,12 @@ packages = [{include = "langchain_workout"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 langchain = "^0.0.334"
-openai = "^0.28.1"
+openai = "^1.2.3"
 rich = "^13.6.0"
 poetry-dotenv-plugin = "^0.2.0"
 fastapi = "^0.104.1"
 uvicorn = "^0.24.0.post1"
+pydantic-settings = "^2.0.3"
 
 [build-system]
 requires = ["poetry-core"]

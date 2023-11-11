@@ -1,10 +1,9 @@
-from langchain import OpenAI, PromptTemplate
+from langchain.llms.openai import OpenAI
+from langchain.prompts import PromptTemplate
 
 from models.chat import ChatMemory
 from models.workout import Workout
 from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
-
-from settings import Settings
 
 
 class LLMParser:

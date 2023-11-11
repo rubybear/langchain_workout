@@ -1,50 +1,33 @@
-from langchain.llms.openai import OpenAI
-from langchain.memory import ConversationBufferMemory
-from langchain.prompts import PromptTemplate
+from functools import lru_cache
+from typing import Annotated
 
-from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
+import uvicorn
+from fastapi import FastAPI, Body, Depends
 
-from rich import print
-
-import chat_memory
+from llm.llm_parser import LLMParser
+from models.chat import mem, ChatMemory
 from models.workout import Workout
+from settings import Settings
 
-# model_name = "gpt-3.5-turbo-16k-0613"
-model_name = "gpt-4"
-temperature = 0.0
-model = OpenAI(model_name=model_name, temperature=temperature)
+app = FastAPI()
 
-memory = ConversationBufferMemory(memory_key="chat_history")
-for query, response in chat_memory.MEMORY.items():
-    memory.chat_memory.add_ai_message(query)
-    memory.chat_memory.add_user_message(response)
 
-parser = PydanticOutputParser(pydantic_object=Workout)
+@lru_cache()
+def get_settings():
+    return Settings()
 
-prompt = PromptTemplate(
-    template="""You're a helpful assistant and expert in exercise science. 
-            You can take user input in the form of workout preferences and generate a workout plan for them.
-            You are very careful and pay extra attention to what type of exercise and its requirements.
-            You will only generate a workout plan in the provided format instructions, nothing else.\n
-            {chat_history}
-            {format_instructions}
-            {query}""",
-    input_variables=["query", "chat_history"],
-    partial_variables={"format_instructions": parser.get_format_instructions()}, )
 
-_input = prompt.format_prompt(
-    query="""
-    Given your conversation with the user, generate a workout plan for them in the specified format and paying 
-    special attention to what specific type of exercise is required and its required fields.
-    """, chat_history=memory)
+@app.get("/prompt")
+async def prompt() -> ChatMemory:
+    return mem
 
-output = model(_input.to_string())
 
-try:
-    workout = parser.parse(output)
-except Exception as e:
-    print("retrying...")
-    retry_parser = RetryWithErrorOutputParser.from_llm(
-        parser=parser, llm=model
-    )
-    workout = retry_parser.parse_with_prompt(output, _input)
+@app.put("/submit")
+async def submit(data: ChatMemory, settings: Annotated[Settings, Depends(get_settings)]) -> Workout:
+    print(settings.openai_api_key)
+    workout = LLMParser(memory=data, api_key=settings.openai_api_key)
+    parsed_workout = workout.parse_workout()
+    return parsed_workout
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

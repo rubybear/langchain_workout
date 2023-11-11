@@ -4,12 +4,14 @@ from models.chat import ChatMemory
 from models.workout import Workout
 from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
 
+from settings import Settings
+
 
 class LLMParser:
-    def __init__(self, memory: ChatMemory, model_name='gpt-3.5-turbo', temperature=0.0):
+    def __init__(self, memory: ChatMemory, api_key: str, model_name='gpt-3.5-turbo', temperature=0.0):
         self.model_name = model_name
         self.temperature = temperature
-        self.model = OpenAI(model_name=model_name, temperature=temperature)
+        self.model = OpenAI(model_name=model_name, temperature=temperature, openai_api_key=api_key)
         self.memory = None
         self.parser = PydanticOutputParser(pydantic_object=Workout)
 

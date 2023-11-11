@@ -27,6 +27,3 @@ async def submit(data: ChatMemory, settings: Annotated[Settings, Depends(get_set
     workout = LLMParser(memory=data, api_key=settings.openai_api_key)
     parsed_workout = workout.parse_workout()
     return parsed_workout
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
